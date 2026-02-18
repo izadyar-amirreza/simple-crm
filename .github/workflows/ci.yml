@@ -14,34 +14,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP 8.4
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
           tools: composer:v2
           coverage: none
 
-      - name: Debug PHP (must be 8.4)
+      - name: Show PHP & Composer versions
         run: |
-          which php
           php -v
           composer -V
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Prepare app
+      - name: Prepare app (env + key)
         run: |
           cp .env.example .env
-          php artisan key:generate
 
-      - name: Run tests
+      - name: Run migrations + tests (SQLite in-memory)
         env:
           APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
           CACHE_STORE: array
           SESSION_DRIVER: array
           QUEUE_CONNECTION: sync
           MAIL_MAILER: array
-        run: php artisan test
+        run: |
+          php artisan config:clear
+          php artisan migrate --force
+          php artisan test
