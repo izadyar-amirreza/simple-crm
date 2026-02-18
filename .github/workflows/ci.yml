@@ -24,6 +24,19 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+           node-version: "20"
+           cache: "npm"
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build assets (Vite)
+        run: npm run build
+
+
       - name: Prepare Laravel (env + key + required dirs)
         run: |
           cp .env.example .env
