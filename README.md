@@ -51,8 +51,9 @@ After seeding, you can log in with:
 
 ### 1) Clone and install dependencies
 ```bash
-git clone <YOUR_REPO_URL>
+git clone https://github.com/izadyar-amirreza/simple-crm.git
 cd simple-crm
 
 composer install
 npm install
+
