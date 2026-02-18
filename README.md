@@ -38,7 +38,7 @@ A simple CRM built with Laravel that demonstrates **role-based access control (R
 After seeding, you can log in with:
 
 - **Admin**
-  - Email: `admin@example.com`
+  - Email: `izadyaramirreza0@gmail.com`
   - Password: `Admin@123456`
 
 - **Sales**
