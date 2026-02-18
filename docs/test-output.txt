@@ -1,0 +1,60 @@
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true                                                    0.01s  
+
+   PASS  Tests\Feature\Auth\AuthenticationTest
+  ✓ login screen can be rendered                                         0.34s  
+  ✓ users can authenticate using the login screen                        0.04s  
+  ✓ users can not authenticate with invalid password                     0.23s  
+  ✓ users can logout                                                     0.03s  
+
+   PASS  Tests\Feature\Auth\EmailVerificationTest
+  ✓ email verification screen can be rendered                            0.02s  
+  ✓ email can be verified                                                0.02s  
+  ✓ email is not verified with invalid hash                              0.02s  
+
+   PASS  Tests\Feature\Auth\PasswordConfirmationTest
+  ✓ confirm password screen can be rendered                              0.02s  
+  ✓ password can be confirmed                                            0.02s  
+  ✓ password is not confirmed with invalid password                      0.22s  
+
+   PASS  Tests\Feature\Auth\PasswordResetTest
+  ✓ reset password link screen can be rendered                           0.03s  
+  ✓ reset password link can be requested                                 0.22s  
+  ✓ reset password screen can be rendered                                0.25s  
+  ✓ password can be reset with valid token                               0.24s  
+
+   PASS  Tests\Feature\Auth\PasswordUpdateTest
+  ✓ password can be updated                                              0.03s  
+  ✓ correct password must be provided to update password                 0.02s  
+
+   PASS  Tests\Feature\Auth\RegistrationTest
+  ✓ registration screen can be rendered                                  0.02s  
+  ✓ new users can register                                               0.02s  
+
+   PASS  Tests\Feature\CustomerAuthorizationTest
+  ✓ sales only sees own customers in index                               0.06s  
+  ✓ sales cannot view or edit or update other users customer             0.05s  
+  ✓ sales can update own customer but owner id does not change           0.04s  
+  ✓ admin can edit any customer                                          0.05s  
+
+   PASS  Tests\Feature\ExampleTest
+  ✓ it returns a successful response                                     0.02s  
+
+   PASS  Tests\Feature\ProfileTest
+  ✓ profile page is displayed                                            0.03s  
+  ✓ profile information can be updated                                   0.02s  
+  ✓ email verification status is unchanged when the email address is un… 0.02s  
+  ✓ user can delete their account                                        0.02s  
+  ✓ correct password must be provided to delete account                  0.02s  
+
+   PASS  Tests\Feature\RbacOwnershipTest
+  ✓ sales cannot access global activity                                  0.06s  
+  ✓ sales cannot view other users customer show                          0.07s  
+  ✓ sales cannot attach other users customer to task                     0.06s  
+  ✓ sales cannot view other users task show                              0.06s  
+  ✓ convert lead only once                                               0.07s  
+
+  Tests:    34 passed (85 assertions)
+  Duration: 2.52s
+

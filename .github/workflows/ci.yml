@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: دریافت کد پروژه
+        uses: actions/checkout@v4
+
+      - name: نصب PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer:v2
+          coverage: none
+
+      - name: ساخت فایل env
+        run: cp .env.example .env
+
+      - name: نصب وابستگی‌های Composer
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: ساخت APP_KEY
+        run: php artisan key:generate
+
+      - name: نصب Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: نصب وابستگی‌های npm
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Build فرانت‌اند
+        run: npm run build
+
+      - name: اجرای تست‌ها
+        run: php artisan test
