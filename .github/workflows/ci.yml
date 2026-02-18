@@ -27,11 +27,12 @@ jobs:
       - name: Prepare Laravel (env + key + required dirs)
         run: |
           cp .env.example .env
-          php artisan key:generate
-          php artisan optimize:clear
           mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache/data bootstrap/cache
           chmod -R ug+rwx storage bootstrap/cache
+          php artisan key:generate
+          php artisan optimize:clear
           touch database/database.sqlite
+
 
       - name: Run tests
         env:
