@@ -2,30 +2,53 @@ name: CI
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
-          extensions: mbstring, pdo, pdo_sqlite, sqlite3, dom, fileinfo
+          tools: composer:v2
+          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           coverage: none
 
-      - name: Install Composer deps
+      - name: Show PHP version (debug)
+        run: php -v
+
+      - name: Cache Composer vendor
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php84-vendor-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php84-vendor-
+
+      - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Prepare app key
+      - name: Prepare Laravel app key
         run: |
           cp .env.example .env
           php artisan key:generate
 
       - name: Run tests
-        run: php artisan test --no-interaction
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+          MAIL_MAILER: array
+        run: php artisan test
