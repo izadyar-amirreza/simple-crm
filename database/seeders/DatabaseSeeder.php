@@ -83,14 +83,16 @@ class DatabaseSeeder extends Seeder
             $email = "customer{$i}.{$user->id}@demo-crm.test";
 
             $customers->push(
-                Customer::create([
-                    'name' => "Customer {$i} ({$user->name})",
-                    'email' => $email,
-                    'phone' => '+98' . rand(9100000000, 9399999999),
-                    'notes' => 'Demo customer created by seeder.',
+                Customer::updateOrCreate(
+                   ['email' => $email],
+                [
+                    'name' => $name,
+                    'phone' => $phone,
+                    'notes' => $notes,
                     'owner_id' => $ownerId,
-                ])
-            );
+                ]
+             );
+          );
         }
 
         // Leads
@@ -101,15 +103,17 @@ class DatabaseSeeder extends Seeder
             $leadEmail = "lead{$i}.{$user->id}@demo-crm.test";
 
             $leads->push(
-                Lead::create([
-                    'name' => "Lead {$i} ({$user->name})",
-                    'email' => $leadEmail,
-                    'phone' => '+98' . rand(9100000000, 9399999999),
-                    'source' => collect(['LinkedIn', 'Website', 'Referral', 'Cold Email'])->random(),
-                    'status' => $leadStatuses[array_rand($leadStatuses)],
-                    'owner_id' => $ownerId,
-                ])
+                Lead::updateOrCreate(
+                 ['email' => $leadEmail],
+               [
+                   'name' => $leadName,
+                   'phone' => $leadPhone,
+                   'source' => $source,
+                   'status' => $status,
+                   'owner_id' => $ownerId,
+               ]
             );
+          );
         }
 
         // Tasks (طبق migration شما: notes دارد، description ندارد)
