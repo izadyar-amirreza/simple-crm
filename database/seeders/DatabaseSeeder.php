@@ -83,16 +83,16 @@ class DatabaseSeeder extends Seeder
             $email = "customer{$i}.{$user->id}@demo-crm.test";
 
             $customers->push(
-                Customer::updateOrCreate(
-                   ['email' => $email],
-                [
-                    'name' => $name,
-                    'phone' => $phone,
-                    'notes' => $notes,
-                    'owner_id' => $ownerId,
-                ]
-             );
-          );
+               Customer::updateOrCreate(
+                 ['email' => $email],
+               [
+                   'name' => $name,
+                   'phone' => $phone,
+                   'notes' => $notes,
+                   'owner_id' => $ownerId,
+               ]
+             )
+           );
         }
 
         // Leads
@@ -112,7 +112,7 @@ class DatabaseSeeder extends Seeder
                    'status' => $status,
                    'owner_id' => $ownerId,
                ]
-            );
+            )
           );
         }
 
