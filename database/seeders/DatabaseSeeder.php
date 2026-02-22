@@ -79,20 +79,19 @@ class DatabaseSeeder extends Seeder
 
         // Customers
         $customers = collect();
+
         for ($i = 1; $i <= $count; $i++) {
             $email = "customer{$i}.{$user->id}@demo-crm.test";
 
-            $customers->push(
-               Customer::updateOrCreate(
-                 ['email' => $email],
-               [
-                   'name' => $name,
-                   'phone' => $phone,
-                   'notes' => $notes,
-                   'owner_id' => $ownerId,
-               ]
-             )
-           );
+            $customers->push(Customer::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => "Customer {$i} ({$user->name})",
+                    'phone' => '+98' . rand(9100000000, 9399999999),
+                    'notes' => 'Demo customer created by seeder.',
+                    'owner_id' => $ownerId,
+                ]
+            ));
         }
 
         // Leads
@@ -102,18 +101,16 @@ class DatabaseSeeder extends Seeder
         for ($i = 1; $i <= $count; $i++) {
             $leadEmail = "lead{$i}.{$user->id}@demo-crm.test";
 
-            $leads->push(
-                Lead::updateOrCreate(
-                 ['email' => $leadEmail],
-               [
-                   'name' => $leadName,
-                   'phone' => $leadPhone,
-                   'source' => $source,
-                   'status' => $status,
-                   'owner_id' => $ownerId,
-               ]
-            )
-          );
+            $leads->push(Lead::updateOrCreate(
+                ['email' => $leadEmail],
+                [
+                    'name' => "Lead {$i} ({$user->name})",
+                    'phone' => '+98' . rand(9100000000, 9399999999),
+                    'source' => collect(['LinkedIn', 'Website', 'Referral', 'Cold Email'])->random(),
+                    'status' => $leadStatuses[array_rand($leadStatuses)],
+                    'owner_id' => $ownerId,
+                ]
+            ));
         }
 
         // Tasks (طبق migration شما: notes دارد، description ندارد)
