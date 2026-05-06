@@ -1,0 +1,22 @@
+app = "simple-crm-izadyar"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_ENV = "production"
+  APP_DEBUG = "false"
+  APP_URL = "https://simple-crm-izadyar.fly.dev"
+  DB_CONNECTION = "pgsql"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_start_machines = true
+  auto_stop_machines = "stop"   # مهم: تنظیم به stop، تا Fly هر از گاهی ماشین‌ها را متوقف کند ولی حداقل 1 ماشین همیشه روشن باشد.
+  min_machines_running = 1      # حداقل 1 ماشین همیشه باید روشن باشد.
+  
+  [http_service.concurrency]
+  type = "requests"             # برای مدیریت ترافیک و درخواست‌ها
+  soft_limit = 20               # حداقل تعداد درخواست‌ها قبل از اینکه Fly سعی کند ماشین جدید بسازد
