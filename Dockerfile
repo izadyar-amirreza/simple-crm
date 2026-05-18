@@ -25,10 +25,12 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install && npm run build
 
-RUN mkdir -p storage/framework/cache/data \
+RUN mkdir -p database \
+    storage/framework/cache/data \
     storage/framework/sessions \
     storage/framework/views \
-    bootstrap/cache
+    bootstrap/cache \
+    && touch database/database.sqlite
 
 RUN chown -R www-data:www-data /var/www/html
 
@@ -38,4 +40,4 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD sh -c "touch database/database.sqlite && chmod -R 775 storage bootstrap/cache database && php artisan migrate --force && apache2-foreground"
