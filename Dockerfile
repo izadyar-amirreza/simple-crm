@@ -41,4 +41,4 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 
 EXPOSE 80
 
-CMD sh -c "touch database/database.sqlite && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache && chmod -R 775 storage bootstrap/cache database && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan cache:clear && php artisan migrate --force && apache2-foreground"
+CMD sh -c "touch database/database.sqlite && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache && chmod -R 775 storage bootstrap/cache database && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan cache:clear && php artisan migrate --force && php artisan db:seed --force && apache2-foreground"
