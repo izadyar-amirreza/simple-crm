@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     npm \
     nodejs \
-    supervisor \
-    nginx \
     && docker-php-ext-install pdo pdo_mysql zip mbstring exif pcntl bcmath gd
 
 RUN a2enmod rewrite
@@ -27,10 +25,17 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install && npm run build
 
+RUN mkdir -p storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    bootstrap/cache
+
 RUN chown -R www-data:www-data /var/www/html
+
+RUN chmod -R 775 storage bootstrap/cache
 
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 
-CMD apache2-foreground
+CMD ["apache2-foreground"]
