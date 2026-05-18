@@ -23,7 +23,8 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN npm install && npm run build
+RUN npm ci || npm install
+RUN npm run build
 
 RUN mkdir -p database \
     storage/framework/cache/data \
