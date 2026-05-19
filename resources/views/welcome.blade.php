@@ -137,7 +137,7 @@
     <main class="page">
         <section class="card">
             <div>
-                <div class="badge">Laravel CRM Project</div>
+                <div class="badge">Simple CRM Project</div>
 
                 <h1>Simple CRM for managing customers, leads and tasks.</h1>
 
