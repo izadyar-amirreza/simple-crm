@@ -74,6 +74,24 @@ Admin users can access all records, while sales users have limited access based 
 
 ![Global Activity](docs/screenshots/global-activity.png)
 
+### Sales User Access
+
+### Dashboard
+
+![Dashboard](docs/screenshots/Sales-Dashboard.png)
+
+### Customers
+
+![Customers](docs/screenshots/Sales-Customers.png)
+
+### Tasks
+
+![Tasks](docs/screenshots/Sales-Tasks.png)
+
+### Leads
+
+![Leads](docs/screenshots/Sales-Leads.png)
+
 ---
 
 ## Features
