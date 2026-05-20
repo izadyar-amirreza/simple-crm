@@ -76,21 +76,19 @@ Admin users can access all records, while sales users have limited access based 
 
 ## Sales User Access
 
-### Dashboard
+The project also includes a seeded **Sales user** with limited access based on ownership rules.
 
-![Dashboard](docs/screenshots/Sales-Dashboard.png)
+### Sales Dashboard
+![Sales Dashboard](docs/screenshots/sales-dashboard.png)
 
-### Customers
+### Sales Customers
+![Sales Customers](docs/screenshots/sales-customers.png)
 
-![Customers](docs/screenshots/Sales-Customers.png)
+### Sales Leads
+![Sales Leads](docs/screenshots/sales-leads.png)
 
-### Tasks
-
-![Tasks](docs/screenshots/Sales-Tasks.png)
-
-### Leads
-
-![Leads](docs/screenshots/Sales-Leads.png)
+### Sales Tasks
+![Sales Tasks](docs/screenshots/sales-tasks.png)
 
 ---
 
