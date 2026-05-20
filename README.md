@@ -74,7 +74,7 @@ Admin users can access all records, while sales users have limited access based 
 
 ![Global Activity](docs/screenshots/global-activity.png)
 
-### Sales User Access
+## Sales User Access
 
 ### Dashboard
 
