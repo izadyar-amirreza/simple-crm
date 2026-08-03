@@ -24,29 +24,44 @@ class Customer extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-        public function scopeVisibleTo($query, \App\Models\User $user)
+    public function tasks()
     {
-        if ($user->hasRole('admin')) return $query;
+        return $this->hasMany(Task::class);
+    }
 
-        // sales فقط رکوردهای خودش
+    public function scopeVisibleTo($query, \App\Models\User $user)
+    {
+        // Admins can see all records
+        if ($user->hasRole('admin')) {
+            return $query;
+        }
+
+        // Sales representatives can only see their own records
         if ($user->hasRole('sales')) {
             return $query->where('owner_id', $user->id);
         }
 
-        // support فقط مشاهده (اگر خواستی)
-        return $query;
+        // Support team can see all records
+        if ($user->hasRole('support')) {
+            return $query; 
+        }
+
+        // 🔒 Deny by default: Users with unknown roles see no records
+        return $query->whereRaw('1=0'); 
     }
 
     public function scopeTrashVisibleTo($query, \App\Models\User $user)
     {
-        // با سیاست فعلی تو Trash فقط برای admin است
-        if ($user->hasRole('admin')) return $query;
+        // Currently, the Trash is restricted to admins only
+        if ($user->hasRole('admin')) {
+            return $query;
+        }
 
-        // اگر خواستی sales هم Trash خودش را ببیند:
+        // Uncomment the line below if sales representatives should see their own trashed records:
         // return $query->where('owner_id', $user->id);
 
-        return $query->whereRaw('1=0'); // هیچ چیز نشان نده
+        // Deny by default: Show nothing to other roles
+        return $query->whereRaw('1=0'); 
     }
-
 
 }
