@@ -11,7 +11,7 @@ class TaskController extends Controller
 {
     public function __construct()
     {
-        // ✅ destroy را خودمان دستی authorize می‌کنیم
+        // ✅ Manually authorize 'destroy' action since we use soft deletes/trash
         $this->authorizeResource(Task::class, 'task', [
             'except' => ['destroy'],
         ]);
@@ -57,97 +57,60 @@ class TaskController extends Controller
         return view('tasks.create', compact('users', 'leads', 'customers'));
     }
 
-    public function store(Request $request)
+    /**
+     * Store a newly created task in storage.
+     * Uses StoreTaskRequest for validation and authorization.
+     */
+    public function store(\App\Http\Requests\StoreTaskRequest $request)
     {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-            'type' => ['required', 'in:call,meeting,follow_up,email'],
-            'status' => ['required', 'in:open,done,canceled'],
+        // 1. Get the validated and cleaned data from the Form Request
+        $data = $request->validated();
 
-            'due_date' => ['nullable', 'date'],
-            'due_time' => ['nullable', 'date_format:H:i'],
-
-            'lead_id' => ['nullable', 'exists:leads,id'],
-            'customer_id' => ['nullable', 'exists:customers,id'],
-            'assigned_to' => ['nullable', 'exists:users,id'],
-        ]);
-
-        $dueAt = null;
+        // 2. Mutate due_date and due_time into a single due_at timestamp
         if (!empty($data['due_date'])) {
             $time = $data['due_time'] ?? '09:00';
-            $dueAt = Carbon::parse($data['due_date'] . ' ' . $time);
+            $data['due_at'] = Carbon::parse($data['due_date'] . ' ' . $time);
         }
-
         unset($data['due_date'], $data['due_time']);
-        $data['due_at'] = $dueAt;
 
-        if (auth()->user()->hasRole('admin')) {
-            $data['assigned_to'] = $data['assigned_to'] ?? auth()->id();
-        } else {
-            $data['assigned_to'] = auth()->id();
-        }
+        // 3. Assign the task to the correct user (Admin can assign to others)
+        $data['assigned_to'] = auth()->user()->hasRole('admin') 
+            ? ($data['assigned_to'] ?? auth()->id()) 
+            : auth()->id();
 
-        $user = auth()->user();
-
-        // ✅ اگر هر دو انتخاب شده بود، customer را ترجیح می‌دهیم و lead را null می‌کنیم
-        if (!empty($data['lead_id']) && !empty($data['customer_id'])) {
-            $data['lead_id'] = null;
-        }
-
-        // ✅ غیر admin اجازه ندارد lead/customer دیگران را به task وصل کند
-        if (!$user->hasRole('admin')) {
-
-            if (!empty($data['lead_id'])) {
-                $ok = \App\Models\Lead::query()
-                    ->visibleTo($user)
-                    ->whereKey($data['lead_id'])
-                    ->exists();
-
-                if (!$ok) abort(403, 'You cannot attach this lead to the task.');
-            }
-
-            if (!empty($data['customer_id'])) {
-                $ok = \App\Models\Customer::query()
-                    ->visibleTo($user)
-                    ->whereKey($data['customer_id'])
-                    ->exists();
-
-                if (!$ok) abort(403, 'You cannot attach this customer to the task.');
-            }
-        }
-
-
+        // 4. Create the task in the database
         $task = Task::create($data);
 
+        // 5. Log the activity 
         ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'task_created',
+            'user_id'      => auth()->id(),
+            'action'       => 'task_created',
             'subject_type' => Task::class,
-            'subject_id' => $task->id,
-            'meta' => [
+            'subject_id'   => $task->id,
+            'meta'         => [
                 'task' => $task->only([
                     'id', 'title', 'type', 'status', 'due_at',
                     'assigned_to', 'lead_id', 'customer_id'
                 ]),
-                // ✅ برای راحتی activity-card
+                // ✅ Added for activity-card rendering convenience
                 'task_id' => $task->id,
             ],
         ]);
 
+        // 6. Redirect back with a success message
         return redirect()
             ->route('tasks.index')
             ->with('success', 'Task created successfully.');
     }
 
-    // ✅ مهم: امضای صحیح برای جلوگیری از 403
+    // ✅ Important: Correct model signature to prevent 403 errors
     public function show(Task $task)
     {
-        // authorizeResource خودش authorize(view) را انجام می‌دهد
+        // authorizeResource automatically handles authorize('view', $task)
         return view('tasks.show', compact('task'));
     }
 
-            public function edit(Task $task)
+    public function edit(Task $task)
     {
         $users = [];
         if (auth()->user()->hasRole('admin')) {
@@ -169,70 +132,30 @@ class TaskController extends Controller
         return view('tasks.edit', compact('task', 'users', 'leads', 'customers'));
     }
 
-
-
-            public function update(Request $request, Task $task)
+    /**
+     * Update the specified task in storage.
+     * Uses UpdateTaskRequest for validation and authorization.
+     */
+    public function update(\App\Http\Requests\UpdateTaskRequest $request, Task $task)
     {
-        $user = auth()->user();
+        // 1. Get validated data (clean and safe)
+        $data = $request->validated();
 
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-            'type'  => ['required', 'in:call,meeting,follow_up,email'],
-            'status'=> ['required', 'in:open,done,canceled'],
-
-            'due_date' => ['nullable', 'date'],
-            'due_time' => ['nullable', 'date_format:H:i'],
-
-            'lead_id'     => ['nullable', 'exists:leads,id'],
-            'customer_id' => ['nullable', 'exists:customers,id'],
-
-            'assigned_to' => ['nullable', 'exists:users,id'],
-        ]);
-
-        // ✅ اگر هر دو انتخاب شده بود، customer را ترجیح می‌دهیم و lead را null می‌کنیم
-        if (!empty($data['lead_id']) && !empty($data['customer_id'])) {
-            $data['lead_id'] = null;
-        }
-
-        // ✅ غیر admin حق ندارد task را به کس دیگری assign کند
-        if ($user->hasRole('admin')) {
-            $data['assigned_to'] = $data['assigned_to'] ?? $task->assigned_to;
-        } else {
-            unset($data['assigned_to']);
-        }
-
-        // ✅ کنترل دسترسی به lead/customer انتخاب‌شده (sales فقط چیزهای خودش)
-        if (!$user->hasRole('admin')) {
-            if (!empty($data['lead_id'])) {
-                $ok = \App\Models\Lead::query()
-                    ->visibleTo($user)
-                    ->whereKey($data['lead_id'])
-                    ->exists();
-
-                if (!$ok) abort(403, 'You cannot attach this lead to the task.');
-            }
-
-            if (!empty($data['customer_id'])) {
-                $ok = \App\Models\Customer::query()
-                    ->visibleTo($user)
-                    ->whereKey($data['customer_id'])
-                    ->exists();
-
-                if (!$ok) abort(403, 'You cannot attach this customer to the task.');
-            }
-        }
-
-        // ✅ ساخت due_at از due_date + due_time (اگر due_date خالی شد => due_at null)
+        // 2. Mutate due_date and due_time into a single due_at timestamp
         $dueAt = null;
         if (!empty($data['due_date'])) {
             $time = $data['due_time'] ?? '09:00';
-            $dueAt = Carbon::parse($data['due_date'] . ' ' . $time);
+            $dueAt = \Illuminate\Support\Carbon::parse($data['due_date'] . ' ' . $time);
         }
         unset($data['due_date'], $data['due_time']);
         $data['due_at'] = $dueAt;
 
-        // ✅ BEFORE برای diff
+        // 3. Admin logic: if admin didn't send 'assigned_to', keep the old one
+        if (auth()->user()->hasRole('admin')) {
+            $data['assigned_to'] = $data['assigned_to'] ?? $task->assigned_to;
+        }
+
+        // 4. Capture state BEFORE the update (for activity diff)
         $before = [
             'title'       => $task->title,
             'notes'       => $task->notes,
@@ -244,11 +167,11 @@ class TaskController extends Controller
             'customer_id' => $task->customer_id ? (int)$task->customer_id : null,
         ];
 
-        // ✅ UPDATE
+        // 5. Perform the UPDATE in database
         $task->update($data);
         $task = $task->fresh();
 
-        // ✅ AFTER برای diff
+        // 6. Capture state AFTER the update
         $after = [
             'title'       => $task->title,
             'notes'       => $task->notes,
@@ -260,7 +183,7 @@ class TaskController extends Controller
             'customer_id' => $task->customer_id ? (int)$task->customer_id : null,
         ];
 
-        // ✅ diff به فرم activity-card: changes[field] = {from,to}
+        // 7. Calculate the difference (diff) for the activity log
         $diff = [];
         foreach ($after as $k => $v) {
             if (($before[$k] ?? null) != $v) {
@@ -268,6 +191,7 @@ class TaskController extends Controller
             }
         }
 
+        // 8. Log the activity if anything actually changed
         if (!empty($diff)) {
             ActivityLog::create([
                 'user_id'      => auth()->id(),
@@ -285,13 +209,12 @@ class TaskController extends Controller
             ]);
         }
 
+        // 9. Redirect back
         return redirect()
             ->route('tasks.show', $task)
             ->with('success', 'Task updated successfully.');
     }
-
-
-
+    
     public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
@@ -316,7 +239,7 @@ class TaskController extends Controller
             ->with('success', 'Task deleted.');
     }
 
-        public function trash()
+    public function trash()
     {
         $this->authorize('viewTrash', Task::class);
 
